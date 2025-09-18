@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prédicteur de Prix de Voiture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.575), rgba(0, 0, 0, 0.603)), 
+                        url('https://07zr.com/blog/wp-content/uploads/2023/06/AdobeStock_604722693-1.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: rgb(255, 255, 255);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            color: #ff9335f5;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #e0e0e0d7;
+        }
+
+        .form-container {
+            background: transparent; /* Formulaire totalement transparent */
+            border: 2px solid rgba(255, 255, 255, 0.8); /* Bordure visible */
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            color: white; /* Texte blanc pour visibilité */
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #95b0cb;
+            font-size: 1rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #ff6b35;
+            box-shadow: 0 0 10px rgba(255,107,53,0.3);
+            transform: translateY(-2px);
+        }
+
+        .predict-btn {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 30px auto;
+            box-shadow: 0 10px 20px rgba(255,107,53,0.3);
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255,107,53,0.4);
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-price {
+            font-size: 2.5rem;
+            color: #2ecc71;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-text {
+            font-size: 1.1rem;
+            color: #ecf0f1;
+        }
+
+        .checkbox-section {
+            margin-top: 20px;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            background: rgba(52, 152, 219, 0.404);
+            padding: 10px;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(52, 152, 219, 0.591);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            color: #dae1e9;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ff6b35;
+            padding-bottom: 5px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PREDICTEUR DE PRIX DE VOITURE</h1>
+        </div>
+
+        <div class="form-container">
+            <form id="carPredictionForm" action="/predict" method="post">
+                
+                <!-- Section Informations Générales -->
+                <div class="form-section">
+                    <div class="section-title">📋 INFORMATIONS GÉNÉRALES</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="Marque">Marque :</label>
+                            <select id="Marque" name="Marque" required>
+                                <option value="">Sélectionnez une marque</option>
+                                <option value="Toyota">Toyota</option>
+                                <option value="Volkswagen">Volkswagen</option>
+                                <option value="Ford">Ford</option>
+                                <option value="BMW">BMW</option>
+                                <option value="mercedes">Mercedes-Benz</option>
+                                <option value="Audi">Audi</option>
+                                <option value="Dacia">Subaru</option>
+                                <option value="Nissan">Nissan</option>
+                                <option value="Peugeot">Peugeot</option>
+                                <option value="Renault">Renault</option>
+                                <option value="Citroen">Citroën</option>
+                                <option value="Hyundai">Hyundai</option>
+                                <option value="kia">Kia</option>
+                                <option value="Opel">Opel</option>
+                                <option value="Fiat">Fiat</option>
+                                <option value="Skoda">Skoda</option>
+                                <option value="Seat">Seat</option>
+                                <option value="Land Rover">Land Rover</option>
+                                <option value="Jeep">Jeep</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Modèle">Modèle :</label>
+                            <input type="text" id="Modèle" name="Modèle" placeholder="Ex: Corolla, Golf, Focus..." required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Année-Modèle">Année-Modèle :</label>
+                            <input type="number" id="Année-Modèle" name="Année-Modèle" min="1990" max="2024" placeholder="2020" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Kilométrage">Kilométrage :</label>
+                            <input type="number" id="Kilométrage" name="Kilométrage" min="0" placeholder="50000" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Type de carburant">Type de Carburant :</label>
+                            <select id="Type de carburant" name="Type de carburant" required>
+                                <option value="">Sélectionnez</option>
+                                <option value="Essence">Essence</option>
+                                <option value="Diesel">Diesel</option>
+                                <option value="Hybride">Hybride</option>
+                                <option value="Électrique">Électrique</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Puissance fiscale">Puissance Fiscale (CV) :</label>
+                            <input type="number" id="Puissance fiscale" name="Puissance fiscale" min="1" max="50" placeholder="6" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Boite de vitesses">Boîte de Vitesses :</label>
+                            <select id="Boite de vitesses" name="Boite de vitesses" required>
+                                <option value="">Sélectionnez</option>
+                                <option value="Manuelle">Manuelle</option>
+                                <option value="Automatique">Automatique</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Nombre de portes">Nombre de Portes :</label>
+                            <select id="Nombre de portes" name="Nombre de portes" required>
+                                <option value="">Sélectionnez</option>
+                                <option value="3">3 portes</option>
+                                <option value="5">5 portes</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Origine">Origine :</label>
+                            <select id="Origine" name="Origine" required>
+                                <option value="">Sélectionnez</option>
+                                <option value="WW au Maroc">WW au Maroc</option>
+                                <option value="Dédouanée">Dédouanée</option>
+                                <option value="Importée neuve">Importée neuve</option>
+                                <option value="Pas encore dédouanée">Pas encore dédouanée</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Première main">Première Main :</label>
+                            <select id="Première main" name="Première main" required>
+                                <option value="">Sélectionnez</option>
+                                <option value="Oui">Oui</option>
+                                <option value="Non">Non</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="État">État du Véhicule :</label>
+                            <select id="État" name="État" required>
+                                <option value="">Sélectionnez</option>
+                                <option value="Excellent">Excellent</option>
+                                <option value="Très bon">Très bon</option>
+                                <option value="Bon">Bon</option>
+                                <option value="Moyen">Moyen</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Équipements et Options -->
+                <div class="form-section">
+                    <div class="section-title">🔧 ÉQUIPEMENTS ET OPTIONS</div>
+                    <div class="checkbox-section">
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="Jantes aluminium" name="Jantes aluminium">
+                                <label for="Jantes aluminium">Jantes Aluminium</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="Airbags" name="Airbags">
+                                <label for="Airbags">Airbags</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="Climatisation" name="Climatisation">
+                                <label for="Climatisation">Climatisation</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="Système de navigation/GPS" name="Système de navigation/GPS">
+                                <label for="Système de navigation/GPS">Système de Navigation/GPS</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="Toit ouvrant" name="Toit ouvrant">
+                                <label for="Toit ouvrant">Toit Ouvrant</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="Sièges cuir" name="Sièges cuir">
+                                <label for="Sièges cuir">Sièges Cuir</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="Radar de recul" name="Radar de recul">
+                                <label for="Radar de recul">Radar de Recul</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="Caméra de recul" name="Caméra de recul">
+                                <label for="Caméra de recul">Caméra de Recul</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="Vitres électriques" name="Vitres électriques">
+                                <label for="Vitres électriques">Vitres Électriques</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ABS" name="ABS">
+                                <label for="ABS">ABS</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ESP" name="ESP">
+                                <label for="ESP">ESP</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="Régulateur de vitesse" name="Régulateur de vitesse">
+                                <label for="Régulateur de vitesse">Régulateur de Vitesse</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="Limiteur de vitesse" name="Limiteur de vitesse">
+                                <label for="Limiteur de vitesse">Limiteur de Vitesse</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="CD/MP3/Bluetooth" name="CD/MP3/Bluetooth">
+                                <label for="CD/MP3/Bluetooth">CD/MP3/Bluetooth</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="Ordinateur de bord" name="Ordinateur de bord">
+                                <label for="Ordinateur de bord">Ordinateur de Bord</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="Verrouillage centralisé à distance" name="Verrouillage centralisé à distance">
+                                <label for="Verrouillage centralisé à distance">Verrouillage Centralisé à Distance</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bouton de prédiction -->
+                <div class="form-section">
+                    <button type="submit" class="predict-btn"> Prédire le Prix</button>
+                </div>
+
+                <!-- Section des résultats -->
+                <div class="form-section">
+                    <div id="result" class="result-container" style="display:block;">
+                        <div class="result-price">{{ prediction_text }}</div>
+                        <div class="result-text">Prix estimé pour votre véhicule</div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function clearPrediction() {
+            // Clear the prediction display
+            document.querySelector('.result-price').innerText = '';
+        }
+    </script>
+</body>
+</html>
